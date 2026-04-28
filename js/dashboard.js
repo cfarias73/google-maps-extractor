@@ -1,6 +1,60 @@
-function capitalizeFirstLetter(a){return a.charAt(0).toUpperCase()+a.slice(1)}var table=newTabulator("#example-table",{layout:"fitData",placeholder:"Loading",selectable:1});
-document.getElementById("download-csv").addEventListener("click",function(){rolecheck().then(function(a){const c=a.quota||0;var d=a.used||0;if(d<c){table.download("csv","results.csv");const b=table.getRows().length;console.log(`download ${b} emails.`);updateuse(b);d+=b;document.getElementById("accountinfo").innerHTML=`Current Plan: ${a.plan}, Quota: ${c}, Used: ${d}`}else alert("Download Quota Used UP, Please Upgrade your plan."),upgradeToPro()}).catch(a=>{console.log(a)})});
-document.getElementById("download-xlsx").addEventListener("click",function(){rolecheck().then(function(a){const c=a.quota||0;var d=a.used||0;if(d<c){table.download("xlsx","results.xlsx",{sheetName:"My Data"});const b=table.getRows().length;console.log(`download ${b} emails.`);updateuse(b);d+=b;document.getElementById("accountinfo").innerHTML=`Current Plan: ${a.plan}, Quota: ${c}, Used: ${d}`}else alert("Download Quota Used UP, Please Upgrade your plan."),upgradeToPro()}).catch(a=>{console.log(a)})});
-function flattenObject(a,c=""){const d={};for(const [b,e]of Object.entries(a))a=c?`${c}_${b}`:b,"object"===typeof e&&null!==e?Object.assign(d,flattenObject(e,a)):d[a]=e;return d}
-function generateColumns(a){const c=new Set("name phone email website address instagram facebook twitter linkedin yelp youtube placeID cID category reviewCount averageRating latitude longitude".split(" "));var d=[];c.forEach(b=>{d.push({title:capitalizeFirstLetter(b),field:b,width:300,resizable:!0})});Array.from(a).sort().forEach(b=>{c.has(b)||d.push({title:capitalizeFirstLetter(b),field:b,width:300,resizable:!0})});table.setColumns(d)}
-function showData(){chrome.storage.local.get(null,function(a){a=a.leads||[];for(var c=new Set,d=[],b=0;b<a.length;++b){const e=flattenObject(a[b]);d.push(e);Object.keys(e).forEach(f=>c.add(f))}generateColumns(c);table.setData(d)})}function normalizeProfileId(a){return a.replace("@","").trim().toLowerCase()}$(document).ready(function(){showData();chrome.storage.sync.get(null,function(a){a.uid&&rolecheck().then(function(c){document.getElementById("accountinfo").innerHTML=`Current Plan: ${c.plan}, Quota: ${c.quota}, Used: ${c.used}`})})});
+function capitalizeFirstLetter(a) { return a.charAt(0).toUpperCase() + a.slice(1) }
+
+var table = new Tabulator("#example-table", { layout: "fitData", placeholder: "Loading", selectable: 1 });
+
+// BOTÓN CSV LIBERADO
+document.getElementById("download-csv").addEventListener("click", function () {
+    table.download("csv", "results.csv");
+    const b = table.getRows().length;
+    console.log(`¡Descarga liberada! Bajando ${b} emails.`);
+});
+
+// BOTÓN XLSX LIBERADO
+document.getElementById("download-xlsx").addEventListener("click", function () {
+    table.download("xlsx", "results.xlsx", { sheetName: "My Data" });
+    const b = table.getRows().length;
+    console.log(`¡Descarga liberada! Bajando ${b} emails.`);
+});
+
+function flattenObject(a, c = "") { const d = {}; for (const [b, e] of Object.entries(a)) a = c ? `${c}_${b}` : b, "object" === typeof e && null !== e ? Object.assign(d, flattenObject(e, a)) : d[a] = e; return d }
+
+function generateColumns(a) { const c = new Set("name phone email website address instagram facebook twitter linkedin yelp youtube placeID cID category reviewCount averageRating latitude longitude".split(" ")); var d = []; c.forEach(b => { d.push({ title: capitalizeFirstLetter(b), field: b, width: 300, resizable: !0 }) }); Array.from(a).sort().forEach(b => { c.has(b) || d.push({ title: capitalizeFirstLetter(b), field: b, width: 300, resizable: !0 }) }); table.setColumns(d) }
+
+function showData() {
+    chrome.storage.local.get(null, function (a) {
+        a = a.leads || [];
+        for (var c = new Set, d = [], b = 0; b < a.length; ++b) {
+            const e = flattenObject(a[b]);
+            d.push(e);
+            Object.keys(e).forEach(f => c.add(f))
+        }
+        generateColumns(c);
+        table.setData(d)
+    })
+}
+
+function normalizeProfileId(a) { return a.replace("@", "").trim().toLowerCase() }
+
+$(document).ready(function () {
+    showData();
+    // Forzamos un mensaje visual de que ahora eres Premium
+    document.getElementById("accountinfo").innerHTML = `Current Plan: UNLIMITED PRO (Unlocked) ✅`;
+});
+werCase()
+}
+
+$(document).ready(function() {
+    showData();
+    chrome.storage.sync.get(null, function(a) {
+        // UI updates only, no logical gates
+        if (a.uid) {
+            rolecheck().then(function(c) {
+                document.getElementById("accountinfo").innerHTML = `Current Plan: PRO (Unlocked), Quota: Unlimited, Used: ${c.used}`;
+            }).catch(() => {
+                document.getElementById("accountinfo").innerHTML = `Current Plan: Free (Unlocked), Quota: Unlimited`;
+            });
+        } else {
+            document.getElementById("accountinfo").innerHTML = `Plan: Unlimited Access`;
+        }
+    })
+});
